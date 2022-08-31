@@ -27,11 +27,13 @@ const resolvers = {
       const token = signToken(user);
       return { token, user };
     },
+
     addUser: async (parent, { username, email, password }) => {
       const user = await User.create({ username, email, password });
       const token = signToken(user);
       return { token, user };
     },
+
     saveBook: async (parent, { bookId, authors, description, image, link }, context) => {
       if (context.user) {
         const book = await Book.create({
@@ -40,9 +42,15 @@ const resolvers = {
           description,
           image,
           link
-        })
+        });
+
+        await User.findOneAndUpdate(
+          { _id: context.user._id },
+          { $addToSet: { savedBooks: book }}
+        )
       }
     },
+    
     removeBook: async (parent, { bookId }, context) => {
       if (context.user) {
         const book = await Book.findOneAndDelete({
